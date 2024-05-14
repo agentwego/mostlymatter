@@ -1,0 +1,365 @@
+diff --git a/server/.golangci.yml b/server/.golangci.yml
+index 17dd33e925..fd716e15fc 100644
+--- a/server/.golangci.yml
++++ b/server/.golangci.yml
+@@ -59,4 +59,4 @@ issues:
+ 
+     - linters:
+         - errcheck
+-      path: "channels|platform|cmd/mattermost|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
++      path: "channels|platform|cmd/mostlymatter|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
+diff --git a/server/Makefile b/server/Makefile
+index 76b5c1c935..4290a1e1a9 100644
+--- a/server/Makefile
++++ b/server/Makefile
+@@ -59,7 +59,7 @@ MMCTL_LDFLAGS += -X "$(MMCTL_PKG).buildDate=$(MMCTL_BUILD_DATE)"
+ 
+ # Enterprise
+ BUILD_ENTERPRISE_DIR ?= ../../enterprise
+-BUILD_ENTERPRISE ?= true
++BUILD_ENTERPRISE ?= false
+ BUILD_ENTERPRISE_READY = false
+ BUILD_TYPE_NAME = team
+ BUILD_HASH_ENTERPRISE = none
+@@ -125,16 +125,16 @@ GO_VERSION_VALIDATION_ERR_MSG = Golang version is not supported, please update t
+ # GOOS/GOARCH of the build host, used to determine whether we're cross-compiling or not
+ BUILDER_GOOS_GOARCH="$(shell $(GO) env GOOS)_$(shell $(GO) env GOARCH)"
+ 
+-PLATFORM_FILES="./cmd/mattermost"
++PLATFORM_FILES="./cmd/mostlymatter"
+ 
+ # Output paths
+ DIST_ROOT=dist
+-DIST_PATH=$(DIST_ROOT)/mattermost
+-DIST_PATH_LIN_AMD64=$(DIST_ROOT)/linux_amd64/mattermost
+-DIST_PATH_LIN_ARM64=$(DIST_ROOT)/linux_arm64/mattermost
+-DIST_PATH_OSX_AMD64=$(DIST_ROOT)/darwin_amd64/mattermost
+-DIST_PATH_OSX_ARM64=$(DIST_ROOT)/darwin_arm64/mattermost
+-DIST_PATH_WIN=$(DIST_ROOT)/windows/mattermost
++DIST_PATH=$(DIST_ROOT)/mostlymatter
++DIST_PATH_LIN_AMD64=$(DIST_ROOT)/linux_amd64/mostlymatter
++DIST_PATH_LIN_ARM64=$(DIST_ROOT)/linux_arm64/mostlymatter
++DIST_PATH_OSX_AMD64=$(DIST_ROOT)/darwin_amd64/mostlymatter
++DIST_PATH_OSX_ARM64=$(DIST_ROOT)/darwin_arm64/mostlymatter
++DIST_PATH_WIN=$(DIST_ROOT)/windows/mostlymatter
+ 
+ # Packages lists
+ TE_PACKAGES=$(shell $(GO) list ./public/...) $(shell $(GO) list ./... | grep -vE 'server/v8/cmd/mmctl')
+@@ -718,7 +718,7 @@ clean: stop-docker ## Clean up everything except persistent server data.
+ 	rm -f *.out
+ 	rm -f *.test
+ 	rm -f channels/imports/imports.go
+-	rm -f cmd/mattermost/cprofile*.out
++	rm -f cmd/mostlymatter/cprofile*.out
+ 
+ nuke: clean clean-docker ## Clean plus removes persistent server data.
+ 	@echo BOOM
+diff --git a/server/channels/app/limits.go b/server/channels/app/limits.go
+index ff216fd74c..053b4af4a7 100644
+--- a/server/channels/app/limits.go
++++ b/server/channels/app/limits.go
+@@ -12,8 +12,8 @@ import (
+ )
+ 
+ const (
+-	maxUsersLimit     = 5_000
+-	maxUsersHardLimit = 11_000
++	maxUsersLimit     = 5_000_000
++	maxUsersHardLimit = 11_000_000
+ )
+ 
+ func (a *App) GetServerLimits() (*model.ServerLimits, *model.AppError) {
+diff --git a/server/cmd/mattermost/commands/cmdtestlib.go b/server/cmd/mostlymatter/commands/cmdtestlib.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/cmdtestlib.go
+rename to server/cmd/mostlymatter/commands/cmdtestlib.go
+diff --git a/server/cmd/mattermost/commands/db.go b/server/cmd/mostlymatter/commands/db.go
+similarity index 97%
+rename from server/cmd/mattermost/commands/db.go
+rename to server/cmd/mostlymatter/commands/db.go
+index 17c96c0c45..4a5c210479 100644
+--- a/server/cmd/mattermost/commands/db.go
++++ b/server/cmd/mostlymatter/commands/db.go
+@@ -34,13 +34,13 @@ var InitDbCmd = &cobra.Command{
+ 
+ This command should be run using a database configuration DSN.`,
+ 	Example: `  # you can use the config flag to pass the DSN
+-  $ mattermost db init --config postgres://localhost/mattermost
++  $ mostlymatter db init --config postgres://localhost/mattermost
+ 
+   # or you can use the MM_CONFIG environment variable
+-  $ MM_CONFIG=postgres://localhost/mattermost mattermost db init
++  $ MM_CONFIG=postgres://localhost/mattermost mostlymatter db init
+ 
+   # and you can set a custom defaults file to be loaded into the database
+-  $ MM_CUSTOM_DEFAULTS_PATH=custom.json MM_CONFIG=postgres://localhost/mattermost mattermost db init`,
++  $ MM_CUSTOM_DEFAULTS_PATH=custom.json MM_CONFIG=postgres://localhost/mattermost mostlymatter db init`,
+ 	Args: cobra.NoArgs,
+ 	RunE: initDbCmdF,
+ }
+@@ -48,7 +48,7 @@ This command should be run using a database configuration DSN.`,
+ var ResetCmd = &cobra.Command{
+ 	Use:   "reset",
+ 	Short: "Reset the database to initial state",
+-	Long:  "Completely erases the database causing the loss of all data. This will reset Mattermost to its initial state.",
++	Long:  "Completely erases the database causing the loss of all data. This will reset Mostlymatter to its initial state.",
+ 	RunE:  resetCmdF,
+ }
+ 
+diff --git a/server/cmd/mattermost/commands/exec_command_test.go b/server/cmd/mostlymatter/commands/exec_command_test.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/exec_command_test.go
+rename to server/cmd/mostlymatter/commands/exec_command_test.go
+diff --git a/server/cmd/mattermost/commands/export.go b/server/cmd/mostlymatter/commands/export.go
+similarity index 89%
+rename from server/cmd/mattermost/commands/export.go
+rename to server/cmd/mostlymatter/commands/export.go
+index 5e2894ada4..f7e916958f 100644
+--- a/server/cmd/mattermost/commands/export.go
++++ b/server/cmd/mostlymatter/commands/export.go
+@@ -21,38 +21,38 @@ import (
+ 
+ var ExportCmd = &cobra.Command{
+ 	Use:   "export",
+-	Short: "Export data from Mattermost",
+-	Long:  "Export data from Mattermost in a format suitable for import into a third-party application or another Mattermost instance",
++	Short: "Export data from Mostlymatter",
++	Long:  "Export data from Mostlymatter in a format suitable for import into a third-party application or another Mattermost instance",
+ }
+ 
+ var ScheduleExportCmd = &cobra.Command{
+ 	Use:     "schedule",
+-	Short:   "Schedule an export data job in Mattermost",
+-	Long:    "Schedule an export data job in Mattermost (this will run asynchronously via a background worker)",
++	Short:   "Schedule an export data job in Mostlymatter",
++	Long:    "Schedule an export data job in Mostlymatter (this will run asynchronously via a background worker)",
+ 	Example: "export schedule --format=actiance --exportFrom=12345 --timeoutSeconds=12345",
+ 	RunE:    scheduleExportCmdF,
+ }
+ 
+ var CsvExportCmd = &cobra.Command{
+ 	Use:     "csv",
+-	Short:   "Export data from Mattermost in CSV format",
+-	Long:    "Export data from Mattermost in CSV format",
++	Short:   "Export data from Mostlymatter in CSV format",
++	Long:    "Export data from Mostlymatter in CSV format",
+ 	Example: "export csv --exportFrom=12345",
+ 	RunE:    buildExportCmdF("csv"),
+ }
+ 
+ var ActianceExportCmd = &cobra.Command{
+ 	Use:     "actiance",
+-	Short:   "Export data from Mattermost in Actiance format",
+-	Long:    "Export data from Mattermost in Actiance format",
++	Short:   "Export data from Mostlymatter in Actiance format",
++	Long:    "Export data from Mostlymatter in Actiance format",
+ 	Example: "export actiance --exportFrom=12345",
+ 	RunE:    buildExportCmdF("actiance"),
+ }
+ 
+ var GlobalRelayZipExportCmd = &cobra.Command{
+ 	Use:     "global-relay-zip",
+-	Short:   "Export data from Mattermost into a zip file containing emails to send to Global Relay for debug and testing purposes only.",
+-	Long:    "Export data from Mattermost into a zip file containing emails to send to Global Relay for debug and testing purposes only. This does not archive any information in Global Relay.",
++	Short:   "Export data from Mostlymatter into a zip file containing emails to send to Global Relay for debug and testing purposes only.",
++	Long:    "Export data from Mostlymatter into a zip file containing emails to send to Global Relay for debug and testing purposes only. This does not archive any information in Global Relay.",
+ 	Example: "export global-relay-zip --exportFrom=12345",
+ 	RunE:    buildExportCmdF("globalrelay-zip"),
+ }
+@@ -60,7 +60,7 @@ var GlobalRelayZipExportCmd = &cobra.Command{
+ var BulkExportCmd = &cobra.Command{
+ 	Use:     "bulk [file]",
+ 	Short:   "Export bulk data.",
+-	Long:    "Export data to a file compatible with the Mattermost Bulk Import format.",
++	Long:    "Export data to a file compatible with the Mostlymatter Bulk Import format.",
+ 	Example: "export bulk bulk_data.json",
+ 	RunE:    bulkExportCmdF,
+ 	Args:    cobra.ExactArgs(1),
+diff --git a/server/cmd/mattermost/commands/export_test.go b/server/cmd/mostlymatter/commands/export_test.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/export_test.go
+rename to server/cmd/mostlymatter/commands/export_test.go
+diff --git a/server/cmd/mattermost/commands/import.go b/server/cmd/mostlymatter/commands/import.go
+similarity index 98%
+rename from server/cmd/mattermost/commands/import.go
+rename to server/cmd/mostlymatter/commands/import.go
+index e02cebdc32..c76b9425a3 100644
+--- a/server/cmd/mattermost/commands/import.go
++++ b/server/cmd/mostlymatter/commands/import.go
+@@ -32,7 +32,7 @@ var SlackImportCmd = &cobra.Command{
+ var BulkImportCmd = &cobra.Command{
+ 	Use:     "bulk [file]",
+ 	Short:   "Import bulk data.",
+-	Long:    "Import data from a Mattermost Bulk Import File.",
++	Long:    "Import data from a Mostlymatter Bulk Import File.",
+ 	Example: "  import bulk bulk_data.json",
+ 	RunE:    bulkImportCmdF,
+ }
+diff --git a/server/cmd/mattermost/commands/init.go b/server/cmd/mostlymatter/commands/init.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/init.go
+rename to server/cmd/mostlymatter/commands/init.go
+diff --git a/server/cmd/mattermost/commands/jobserver.go b/server/cmd/mostlymatter/commands/jobserver.go
+similarity index 88%
+rename from server/cmd/mattermost/commands/jobserver.go
+rename to server/cmd/mostlymatter/commands/jobserver.go
+index 60b570bea6..5ab12fc0cb 100644
+--- a/server/cmd/mattermost/commands/jobserver.go
++++ b/server/cmd/mostlymatter/commands/jobserver.go
+@@ -18,7 +18,7 @@ import (
+ 
+ var JobserverCmd = &cobra.Command{
+ 	Use:   "jobserver",
+-	Short: "Start the Mattermost job server",
++	Short: "Start the Mostlymatter job server",
+ 	RunE:  jobserverCmdF,
+ }
+ 
+@@ -46,8 +46,8 @@ func jobserverCmdF(command *cobra.Command, args []string) error {
+ 	rctx := request.EmptyContext(a.Log())
+ 
+ 	// Run jobs
+-	rctx.Logger().Info("Starting Mattermost job server")
+-	defer rctx.Logger().Info("Stopped Mattermost job server")
++	rctx.Logger().Info("Starting Mostlymatter job server")
++	defer rctx.Logger().Info("Stopped Mostlymatter job server")
+ 
+ 	if !noJobs {
+ 		a.Srv().Jobs.StartWorkers()
+@@ -68,7 +68,7 @@ func jobserverCmdF(command *cobra.Command, args []string) error {
+ 	<-signalChan
+ 
+ 	// Cleanup anything that isn't handled by a defer statement
+-	rctx.Logger().Info("Stopping Mattermost job server")
++	rctx.Logger().Info("Stopping Mostlymatter job server")
+ 
+ 	return nil
+ }
+diff --git a/server/cmd/mattermost/commands/main_test.go b/server/cmd/mostlymatter/commands/main_test.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/main_test.go
+rename to server/cmd/mostlymatter/commands/main_test.go
+diff --git a/server/cmd/mattermost/commands/output.go b/server/cmd/mostlymatter/commands/output.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/output.go
+rename to server/cmd/mostlymatter/commands/output.go
+diff --git a/server/cmd/mattermost/commands/root.go b/server/cmd/mostlymatter/commands/root.go
+similarity index 70%
+rename from server/cmd/mattermost/commands/root.go
+rename to server/cmd/mostlymatter/commands/root.go
+index 692ac30f53..8d2081ab21 100644
+--- a/server/cmd/mattermost/commands/root.go
++++ b/server/cmd/mostlymatter/commands/root.go
+@@ -18,9 +18,9 @@ func Run(args []string) error {
+ }
+ 
+ var RootCmd = &cobra.Command{
+-	Use:   "mattermost",
++	Use:   "mostlymatter",
+ 	Short: "Open source, self-hosted Slack-alternative",
+-	Long:  `Mattermost offers workplace messaging across web, PC and phones with archiving, search and integration with your existing systems. Documentation available at https://docs.mattermost.com`,
++	Long:  `Mostlymatter offers workplace messaging across web, PC and phones with archiving, search and integration with your existing systems. Documentation available at https://docs.mattermost.com`,
+ 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+ 		checkForRootUser()
+ 	},
+@@ -33,6 +33,6 @@ func init() {
+ // checkForRootUser logs a warning if the process is running as root
+ func checkForRootUser() {
+ 	if os.Geteuid() == 0 {
+-		mlog.Warn("Running Mattermost as root is not recommended. Please use a non-root user.")
++		mlog.Warn("Running Mostlymatter as root is not recommended. Please use a non-root user.")
+ 	}
+ }
+diff --git a/server/cmd/mattermost/commands/server.go b/server/cmd/mostlymatter/commands/server.go
+similarity index 96%
+rename from server/cmd/mattermost/commands/server.go
+rename to server/cmd/mostlymatter/commands/server.go
+index 5f73ba0501..2de7469081 100644
+--- a/server/cmd/mattermost/commands/server.go
++++ b/server/cmd/mostlymatter/commands/server.go
+@@ -27,7 +27,7 @@ import (
+ 
+ var serverCmd = &cobra.Command{
+ 	Use:          "server",
+-	Short:        "Run the Mattermost server",
++	Short:        "Run the Mostlymatter server",
+ 	RunE:         serverCmdF,
+ 	SilenceUsage: true,
+ }
+@@ -41,7 +41,7 @@ func serverCmdF(command *cobra.Command, args []string) error {
+ 	interruptChan := make(chan os.Signal, 1)
+ 
+ 	if err := utils.TranslationsPreInit(); err != nil {
+-		return errors.Wrap(err, "unable to load Mattermost translation files")
++		return errors.Wrap(err, "unable to load Mostlymatter translation files")
+ 	}
+ 
+ 	customDefaults, err := loadCustomDefaults()
+diff --git a/server/cmd/mattermost/commands/server_test.go b/server/cmd/mostlymatter/commands/server_test.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/server_test.go
+rename to server/cmd/mostlymatter/commands/server_test.go
+diff --git a/server/cmd/mattermost/commands/test.go b/server/cmd/mostlymatter/commands/test.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/test.go
+rename to server/cmd/mostlymatter/commands/test.go
+diff --git a/server/cmd/mattermost/commands/utils.go b/server/cmd/mostlymatter/commands/utils.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/utils.go
+rename to server/cmd/mostlymatter/commands/utils.go
+diff --git a/server/cmd/mattermost/commands/utils_test.go b/server/cmd/mostlymatter/commands/utils_test.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/utils_test.go
+rename to server/cmd/mostlymatter/commands/utils_test.go
+diff --git a/server/cmd/mattermost/commands/version.go b/server/cmd/mostlymatter/commands/version.go
+similarity index 92%
+rename from server/cmd/mattermost/commands/version.go
+rename to server/cmd/mostlymatter/commands/version.go
+index 5a5a5f160d..b0c0dc11ff 100644
+--- a/server/cmd/mattermost/commands/version.go
++++ b/server/cmd/mostlymatter/commands/version.go
+@@ -16,7 +16,7 @@ var VersionCmd = &cobra.Command{
+ }
+ 
+ func init() {
+-	VersionCmd.Flags().Bool("skip-server-start", false, "Skip the server initialization and return the Mattermost version without the DB version.")
++	VersionCmd.Flags().Bool("skip-server-start", false, "Skip the server initialization and return the Mostlymatter version without the DB version.")
+ 	VersionCmd.Flags().MarkDeprecated("skip-server-start", "This flag is not necessary anymore and the flag will be removed in the future releases. Consider removing it from your scripts.")
+ 	RootCmd.AddCommand(VersionCmd)
+ }
+diff --git a/server/cmd/mattermost/commands/version_test.go b/server/cmd/mostlymatter/commands/version_test.go
+similarity index 100%
+rename from server/cmd/mattermost/commands/version_test.go
+rename to server/cmd/mostlymatter/commands/version_test.go
+diff --git a/server/cmd/mattermost/main.go b/server/cmd/mostlymatter/main.go
+similarity index 88%
+rename from server/cmd/mattermost/main.go
+rename to server/cmd/mostlymatter/main.go
+index 5fb4b4a005..1783e812f3 100644
+--- a/server/cmd/mattermost/main.go
++++ b/server/cmd/mostlymatter/main.go
+@@ -6,7 +6,7 @@ package main
+ import (
+ 	"os"
+ 
+-	"github.com/mattermost/mattermost/server/v8/cmd/mattermost/commands"
++	"github.com/mattermost/mattermost/server/v8/cmd/mostlymatter/commands"
+ 	// Import and register app layer slash commands
+ 	_ "github.com/mattermost/mattermost/server/v8/channels/app/slashcommands"
+ 	// Plugins
+diff --git a/server/cmd/mattermost/main_test.go b/server/cmd/mostlymatter/main_test.go
+similarity index 96%
+rename from server/cmd/mattermost/main_test.go
+rename to server/cmd/mostlymatter/main_test.go
+index 8ec8a0bea4..c661c2012c 100644
+--- a/server/cmd/mattermost/main_test.go
++++ b/server/cmd/mostlymatter/main_test.go
+@@ -12,7 +12,7 @@ import (
+ 
+ // TestRunMain can be used to track code coverage in integration tests.
+ // To run this:
+-// go test -coverpkg="<>" -ldflags '<>' -tags maincoverage -c ./cmd/mattermost/
++// go test -coverpkg="<>" -ldflags '<>' -tags maincoverage -c ./cmd/mostlymatter/
+ // ./mattermost.test -test.run="^TestRunMain$" -test.coverprofile=coverage.out
+ // And then run your integration tests.
+ func TestRunMain(t *testing.T) {
