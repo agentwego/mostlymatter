@@ -1,0 +1,28 @@
+diff --git a/server/Makefile b/server/Makefile
+index d8f5034933..e90a99ae41 100644
+--- a/server/Makefile
++++ b/server/Makefile
+@@ -62,7 +62,7 @@ MMCTL_LDFLAGS += -X "$(MMCTL_PKG).buildDate=$(MMCTL_BUILD_DATE)"
+ 
+ # Enterprise
+ BUILD_ENTERPRISE_DIR ?= ../../enterprise
+-BUILD_ENTERPRISE ?= true
++BUILD_ENTERPRISE ?= false
+ BUILD_ENTERPRISE_READY = false
+ BUILD_TYPE_NAME = team
+ BUILD_HASH_ENTERPRISE = none
+diff --git a/server/channels/app/limits.go b/server/channels/app/limits.go
+index 42e26d7190..0673dfbaff 100644
+--- a/server/channels/app/limits.go
++++ b/server/channels/app/limits.go
+@@ -12,8 +12,8 @@ import (
+ )
+ 
+ const (
+-	maxUsersLimit     = 10000
+-	maxUsersHardLimit = 11000
++	maxUsersLimit     = 10000000
++	maxUsersHardLimit = 11000000
+ )
+ 
+ func (a *App) GetUserLimits() (*model.UserLimits, *model.AppError) {
