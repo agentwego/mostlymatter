@@ -21,18 +21,19 @@ build:
     - tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz
     - cd -
   script:
+    - sed -e "s/^\(BUILD_NUMBER\) ?= .*/\1 = $CI_JOB_ID/" -e "s/^\(BUILD_HASH = \).*/\1$(git rev-parse HEAD)/" -i server/Makefile
     - git apply limitless.patch
     - cd server
     - make validate-go-version
     - make setup-go-work
     - make build-linux-amd64
     - cd -
-    - mv server/bin/mattermost "mattermost-limitless-$CI_COMMIT_TAG"
+    - mv server/bin/mattermost "mattermost-$CI_COMMIT_TAG"
   cache:
     key: "$CI_COMMIT_TAG"
     policy: push
     paths:
-      - "mattermost-limitless-$CI_COMMIT_TAG"
+      - "mattermost-$CI_COMMIT_TAG"
   rules:
     - if: '$CI_COMMIT_TAG =~ /limitless/'
 
@@ -51,19 +52,19 @@ publish:
           > ~/.minisign/minisign.key"
     - echo "$MINISIG_KEY" >> ~/.minisign/minisign.key
     - chmod 600 ~/.minisign/minisign.key
-    - echo "$MINISIG_PWD" | minisign -Sm "mattermost-limitless-$CI_COMMIT_TAG"
-    - sha512sum "mattermost-limitless-$CI_COMMIT_TAG" > "mattermost-limitless-$CI_COMMIT_TAG.sha512"
+    - echo "$MINISIG_PWD" | minisign -Sm "mattermost-$CI_COMMIT_TAG"
+    - sha512sum "mattermost-$CI_COMMIT_TAG" > "mattermost-$CI_COMMIT_TAG.sha512"
   script:
     - eval $(ssh-agent -s)
     - ssh-add <(echo "${DEPLOYEMENT_KEY}" | base64 --decode -i)
-    - echo "put mattermost-limitless-$CI_COMMIT_TAG"         | sftp -o "VerifyHostKeyDNS yes" -o "StrictHostKeyChecking accept-new" ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
-    - echo "put mattermost-limitless-$CI_COMMIT_TAG.sha512"  | sftp -o "VerifyHostKeyDNS yes" -o "StrictHostKeyChecking accept-new" ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
-    - echo "put mattermost-limitless-$CI_COMMIT_TAG.minisig" | sftp -o "VerifyHostKeyDNS yes" -o "StrictHostKeyChecking accept-new" ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
+    - echo "put mattermost-$CI_COMMIT_TAG"         | sftp -o "VerifyHostKeyDNS yes" -o "StrictHostKeyChecking accept-new" ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
+    - echo "put mattermost-$CI_COMMIT_TAG.sha512"  | sftp -o "VerifyHostKeyDNS yes" -o "StrictHostKeyChecking accept-new" ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
+    - echo "put mattermost-$CI_COMMIT_TAG.minisig" | sftp -o "VerifyHostKeyDNS yes" -o "StrictHostKeyChecking accept-new" ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
   cache:
     key: "$CI_COMMIT_TAG"
     policy: pull
     paths:
-      - "mattermost-limitless-$CI_COMMIT_TAG"
+      - "mattermost-$CI_COMMIT_TAG"
   rules:
     - if: $ENVKEY
     - if: '$CI_COMMIT_TAG =~ /limitless/'
