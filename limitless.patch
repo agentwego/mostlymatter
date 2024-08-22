@@ -6,8 +6,8 @@ index 17dd33e925..fd716e15fc 100644
  
      - linters:
          - errcheck
--      path: "channels|platform|cmd/mattermost|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
-+      path: "channels|platform|cmd/mostlymatter|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
+-      path: "channels|platform|cmd/mattermost|public/model|public/plugin|public/shared/mlog|enterprise/cloud|enterprise/ldap"
++      path: "channels|platform|cmd/mostlymatter|public/model|public/plugin|public/shared/mlog|enterprise/cloud|enterprise/ldap"
 diff --git a/server/Makefile b/server/Makefile
 index 76b5c1c935..4290a1e1a9 100644
 --- a/server/Makefile
