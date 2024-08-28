@@ -1,15 +1,15 @@
 diff --git a/server/.golangci.yml b/server/.golangci.yml
-index 17dd33e925..fd716e15fc 100644
+index 3b0232264f..d8c223402d 100644
 --- a/server/.golangci.yml
 +++ b/server/.golangci.yml
 @@ -59,4 +59,4 @@ issues:
  
      - linters:
          - errcheck
--      path: "channels|platform|cmd/mattermost|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
-+      path: "channels|platform|cmd/mostlymatter|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
+-      path: "channels|platform|cmd/mattermost|public/model|public/plugin|public/shared/mlog|enterprise/saml|enterprise/cloud|enterprise/ldap"
++      path: "channels|platform|cmd/mostlymatter|public/model|public/plugin|public/shared/mlog|enterprise/saml|enterprise/cloud|enterprise/ldap"
 diff --git a/server/Makefile b/server/Makefile
-index 76b5c1c935..4290a1e1a9 100644
+index 8309220ed5..c999d50595 100644
 --- a/server/Makefile
 +++ b/server/Makefile
 @@ -59,7 +59,7 @@ MMCTL_LDFLAGS += -X "$(MMCTL_PKG).buildDate=$(MMCTL_BUILD_DATE)"
@@ -45,7 +45,7 @@ index 76b5c1c935..4290a1e1a9 100644
  
  # Packages lists
  TE_PACKAGES=$(shell $(GO) list ./public/...) $(shell $(GO) list ./... | grep -vE 'server/v8/cmd/mmctl')
-@@ -718,7 +718,7 @@ clean: stop-docker ## Clean up everything except persistent server data.
+@@ -709,7 +709,7 @@ clean: stop-docker ## Clean up everything except persistent server data.
  	rm -f *.out
  	rm -f *.test
  	rm -f channels/imports/imports.go
