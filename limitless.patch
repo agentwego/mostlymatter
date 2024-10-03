@@ -1,15 +1,34 @@
 diff --git a/server/.golangci.yml b/server/.golangci.yml
-index 17dd33e925..fd716e15fc 100644
+index 550538d4f3..897468a43f 100644
 --- a/server/.golangci.yml
 +++ b/server/.golangci.yml
-@@ -59,4 +59,4 @@ issues:
- 
-     - linters:
-         - errcheck
--      path: "channels|platform|cmd/mattermost|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
-+      path: "channels|platform|cmd/mostlymatter|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
+@@ -163,15 +163,15 @@ issues:
+         channels/web/saml.go|\
+         channels/web/web_test.go|\
+         channels/web/webhook.go|\
+-        cmd/mattermost/commands/cmdtestlib.go|\
+-        cmd/mattermost/commands/db.go|\
+-        cmd/mattermost/commands/export.go|\
+-        cmd/mattermost/commands/import.go|\
+-        cmd/mattermost/commands/jobserver.go|\
+-        cmd/mattermost/commands/server.go|\
+-        cmd/mattermost/commands/server_test.go|\
+-        cmd/mattermost/commands/test.go|\
+-        cmd/mattermost/commands/version.go|\
++        cmd/mostlymatter/commands/cmdtestlib.go|\
++        cmd/mostlymatter/commands/db.go|\
++        cmd/mostlymatter/commands/export.go|\
++        cmd/mostlymatter/commands/import.go|\
++        cmd/mostlymatter/commands/jobserver.go|\
++        cmd/mostlymatter/commands/server.go|\
++        cmd/mostlymatter/commands/server_test.go|\
++        cmd/mostlymatter/commands/test.go|\
++        cmd/mostlymatter/commands/version.go|\
+         platform/services/cache/lru_striped.go|\
+         platform/services/cache/lru_striped_bench_test.go|\
+         platform/services/cache/lru_striped_test.go|\
 diff --git a/server/Makefile b/server/Makefile
-index 76b5c1c935..4290a1e1a9 100644
+index b596cb571e..62fb204486 100644
 --- a/server/Makefile
 +++ b/server/Makefile
 @@ -59,7 +59,7 @@ MMCTL_LDFLAGS += -X "$(MMCTL_PKG).buildDate=$(MMCTL_BUILD_DATE)"
@@ -45,7 +64,7 @@ index 76b5c1c935..4290a1e1a9 100644
  
  # Packages lists
  TE_PACKAGES=$(shell $(GO) list ./public/...) $(shell $(GO) list ./... | grep -vE 'server/v8/cmd/mmctl')
-@@ -718,7 +718,7 @@ clean: stop-docker ## Clean up everything except persistent server data.
+@@ -727,7 +727,7 @@ clean: stop-docker ## Clean up everything except persistent server data.
  	rm -f *.out
  	rm -f *.test
  	rm -f channels/imports/imports.go
@@ -55,15 +74,15 @@ index 76b5c1c935..4290a1e1a9 100644
  nuke: clean clean-docker ## Clean plus removes persistent server data.
  	@echo BOOM
 diff --git a/server/channels/app/limits.go b/server/channels/app/limits.go
-index ff216fd74c..053b4af4a7 100644
+index 669715d647..053b4af4a7 100644
 --- a/server/channels/app/limits.go
 +++ b/server/channels/app/limits.go
 @@ -12,8 +12,8 @@ import (
  )
  
  const (
--	maxUsersLimit     = 5_000
--	maxUsersHardLimit = 11_000
+-	maxUsersLimit     = 2_500
+-	maxUsersHardLimit = 5_000
 +	maxUsersLimit     = 5_000_000
 +	maxUsersHardLimit = 11_000_000
  )
@@ -111,20 +130,20 @@ similarity index 100%
 rename from server/cmd/mattermost/commands/exec_command_test.go
 rename to server/cmd/mostlymatter/commands/exec_command_test.go
 diff --git a/server/cmd/mattermost/commands/export.go b/server/cmd/mostlymatter/commands/export.go
-similarity index 89%
+similarity index 92%
 rename from server/cmd/mattermost/commands/export.go
 rename to server/cmd/mostlymatter/commands/export.go
-index 5e2894ada4..f7e916958f 100644
+index ece6eebacf..bc9d31fe46 100644
 --- a/server/cmd/mattermost/commands/export.go
 +++ b/server/cmd/mostlymatter/commands/export.go
-@@ -21,38 +21,38 @@ import (
+@@ -20,14 +20,14 @@ import (
  
  var ExportCmd = &cobra.Command{
  	Use:   "export",
 -	Short: "Export data from Mattermost",
 -	Long:  "Export data from Mattermost in a format suitable for import into a third-party application or another Mattermost instance",
 +	Short: "Export data from Mostlymatter",
-+	Long:  "Export data from Mostlymatter in a format suitable for import into a third-party application or another Mattermost instance",
++	Long:  "Export data from Mostlymatter in a format suitable for import into a third-party application or another Mostlymatter instance",
  }
  
  var ScheduleExportCmd = &cobra.Command{
@@ -136,37 +155,7 @@ index 5e2894ada4..f7e916958f 100644
  	Example: "export schedule --format=actiance --exportFrom=12345 --timeoutSeconds=12345",
  	RunE:    scheduleExportCmdF,
  }
- 
- var CsvExportCmd = &cobra.Command{
- 	Use:     "csv",
--	Short:   "Export data from Mattermost in CSV format",
--	Long:    "Export data from Mattermost in CSV format",
-+	Short:   "Export data from Mostlymatter in CSV format",
-+	Long:    "Export data from Mostlymatter in CSV format",
- 	Example: "export csv --exportFrom=12345",
- 	RunE:    buildExportCmdF("csv"),
- }
- 
- var ActianceExportCmd = &cobra.Command{
- 	Use:     "actiance",
--	Short:   "Export data from Mattermost in Actiance format",
--	Long:    "Export data from Mattermost in Actiance format",
-+	Short:   "Export data from Mostlymatter in Actiance format",
-+	Long:    "Export data from Mostlymatter in Actiance format",
- 	Example: "export actiance --exportFrom=12345",
- 	RunE:    buildExportCmdF("actiance"),
- }
- 
- var GlobalRelayZipExportCmd = &cobra.Command{
- 	Use:     "global-relay-zip",
--	Short:   "Export data from Mattermost into a zip file containing emails to send to Global Relay for debug and testing purposes only.",
--	Long:    "Export data from Mattermost into a zip file containing emails to send to Global Relay for debug and testing purposes only. This does not archive any information in Global Relay.",
-+	Short:   "Export data from Mostlymatter into a zip file containing emails to send to Global Relay for debug and testing purposes only.",
-+	Long:    "Export data from Mostlymatter into a zip file containing emails to send to Global Relay for debug and testing purposes only. This does not archive any information in Global Relay.",
- 	Example: "export global-relay-zip --exportFrom=12345",
- 	RunE:    buildExportCmdF("globalrelay-zip"),
- }
-@@ -60,7 +60,7 @@ var GlobalRelayZipExportCmd = &cobra.Command{
+@@ -35,7 +35,7 @@ var ScheduleExportCmd = &cobra.Command{
  var BulkExportCmd = &cobra.Command{
  	Use:     "bulk [file]",
  	Short:   "Export bulk data.",
@@ -175,10 +164,6 @@ index 5e2894ada4..f7e916958f 100644
  	Example: "export bulk bulk_data.json",
  	RunE:    bulkExportCmdF,
  	Args:    cobra.ExactArgs(1),
-diff --git a/server/cmd/mattermost/commands/export_test.go b/server/cmd/mostlymatter/commands/export_test.go
-similarity index 100%
-rename from server/cmd/mattermost/commands/export_test.go
-rename to server/cmd/mostlymatter/commands/export_test.go
 diff --git a/server/cmd/mattermost/commands/import.go b/server/cmd/mostlymatter/commands/import.go
 similarity index 98%
 rename from server/cmd/mattermost/commands/import.go
@@ -274,10 +259,10 @@ diff --git a/server/cmd/mattermost/commands/server.go b/server/cmd/mostlymatter/
 similarity index 96%
 rename from server/cmd/mattermost/commands/server.go
 rename to server/cmd/mostlymatter/commands/server.go
-index 5f73ba0501..2de7469081 100644
+index 76d33bfaf3..0100abc12a 100644
 --- a/server/cmd/mattermost/commands/server.go
 +++ b/server/cmd/mostlymatter/commands/server.go
-@@ -27,7 +27,7 @@ import (
+@@ -26,7 +26,7 @@ import (
  
  var serverCmd = &cobra.Command{
  	Use:          "server",
@@ -286,7 +271,7 @@ index 5f73ba0501..2de7469081 100644
  	RunE:         serverCmdF,
  	SilenceUsage: true,
  }
-@@ -41,7 +41,7 @@ func serverCmdF(command *cobra.Command, args []string) error {
+@@ -40,7 +40,7 @@ func serverCmdF(command *cobra.Command, args []string) error {
  	interruptChan := make(chan os.Signal, 1)
  
  	if err := utils.TranslationsPreInit(); err != nil {
