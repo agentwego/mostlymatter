@@ -1,18 +1,43 @@
 diff --git a/server/.golangci.yml b/server/.golangci.yml
-index 17dd33e925..fd716e15fc 100644
+index 544490d2d0..7403a36035 100644
 --- a/server/.golangci.yml
 +++ b/server/.golangci.yml
-@@ -59,4 +59,4 @@ issues:
- 
-     - linters:
-         - errcheck
--      path: "channels|platform|cmd/mattermost|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
-+      path: "channels|platform|cmd/mostlymatter|public/model|public/plugin|public/shared/mlog|enterprise/ldap"
+@@ -138,19 +138,19 @@ issues:
+         channels/store/storetest/shared_channel_store.go|\
+         channels/store/storetest/team_store.go|\
+         channels/store/storetest/thread_store.go|\
+         channels/store/storetest/user_store.go|\
+         channels/web/web_test.go|\
+-        cmd/mattermost/commands/cmdtestlib.go|\
+-        cmd/mattermost/commands/db.go|\
+-        cmd/mattermost/commands/export.go|\
+-        cmd/mattermost/commands/import.go|\
+-        cmd/mattermost/commands/jobserver.go|\
+-        cmd/mattermost/commands/server.go|\
+-        cmd/mattermost/commands/server_test.go|\
+-        cmd/mattermost/commands/test.go|\
+-        cmd/mattermost/commands/version.go|\
++        cmd/mostlymatter/commands/cmdtestlib.go|\
++        cmd/mostlymatter/commands/db.go|\
++        cmd/mostlymatter/commands/export.go|\
++        cmd/mostlymatter/commands/import.go|\
++        cmd/mostlymatter/commands/jobserver.go|\
++        cmd/mostlymatter/commands/server.go|\
++        cmd/mostlymatter/commands/server_test.go|\
++        cmd/mostlymatter/commands/test.go|\
++        cmd/mostlymatter/commands/version.go|\
+         platform/services/cache/lru_striped.go|\
+         platform/services/cache/lru_striped_bench_test.go|\
+         platform/services/cache/lru_striped_test.go|\
+         platform/services/cache/lru_test.go|\
+         platform/services/docextractor/combine.go|\
 diff --git a/server/Makefile b/server/Makefile
-index 76b5c1c935..4290a1e1a9 100644
+index 495c617084..4b9ff2aedd 100644
 --- a/server/Makefile
 +++ b/server/Makefile
-@@ -59,7 +59,7 @@ MMCTL_LDFLAGS += -X "$(MMCTL_PKG).buildDate=$(MMCTL_BUILD_DATE)"
+@@ -48,11 +48,11 @@ MMCTL_PKG = github.com/mattermost/mattermost/server/v8/cmd/mmctl/commands
+ MMCTL_BUILD_DATE = $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+ MMCTL_LDFLAGS += -X "$(MMCTL_PKG).buildDate=$(MMCTL_BUILD_DATE)"
  
  # Enterprise
  BUILD_ENTERPRISE_DIR ?= ../../enterprise
@@ -21,7 +46,11 @@ index 76b5c1c935..4290a1e1a9 100644
  BUILD_ENTERPRISE_READY = false
  BUILD_TYPE_NAME = team
  BUILD_HASH_ENTERPRISE = none
-@@ -125,16 +125,16 @@ GO_VERSION_VALIDATION_ERR_MSG = Golang version is not supported, please update t
+ ifneq ($(wildcard $(BUILD_ENTERPRISE_DIR)/.),)
+ 	MMCTL_TESTFLAGS += -ldflags '-X "$(MMCTL_PKG).EnableEnterpriseTests=true" -X "github.com/mattermost/mattermost/server/public/model.BuildEnterpriseReady=true"'
+@@ -115,20 +115,20 @@ GO_VERSION_VALIDATION_ERR_MSG = Golang version is not supported, please update t
+ GO_COMPATIBILITY_TEST_VERSIONS := 1.22.7 1.23.6
+ 
  # GOOS/GOARCH of the build host, used to determine whether we're cross-compiling or not
  BUILDER_GOOS_GOARCH="$(shell $(GO) env GOOS)_$(shell $(GO) env GOARCH)"
  
@@ -45,7 +74,11 @@ index 76b5c1c935..4290a1e1a9 100644
  
  # Packages lists
  TE_PACKAGES=$(shell $(GO) list ./public/...) $(shell $(GO) list ./... | grep -vE 'server/v8/cmd/mmctl')
-@@ -718,7 +718,7 @@ clean: stop-docker ## Clean up everything except persistent server data.
+ MMCTL_PACKAGES=$(shell $(GO) list ./... | grep -E 'server/v8/cmd/mmctl')
+ 
+@@ -726,11 +726,11 @@ clean: stop-docker ## Clean up everything except persistent server data.
+ 	rm -f cover.out
+ 	rm -f ecover.out
  	rm -f *.out
  	rm -f *.test
  	rm -f channels/imports/imports.go
@@ -54,21 +87,27 @@ index 76b5c1c935..4290a1e1a9 100644
  
  nuke: clean clean-docker ## Clean plus removes persistent server data.
  	@echo BOOM
+ 
+ 	rm -rf data
 diff --git a/server/channels/app/limits.go b/server/channels/app/limits.go
-index ff216fd74c..053b4af4a7 100644
+index 669715d647..053b4af4a7 100644
 --- a/server/channels/app/limits.go
 +++ b/server/channels/app/limits.go
-@@ -12,8 +12,8 @@ import (
+@@ -10,12 +10,12 @@ import (
+ 
+ 	"github.com/mattermost/mattermost/server/public/model"
  )
  
  const (
--	maxUsersLimit     = 5_000
--	maxUsersHardLimit = 11_000
+-	maxUsersLimit     = 2_500
+-	maxUsersHardLimit = 5_000
 +	maxUsersLimit     = 5_000_000
 +	maxUsersHardLimit = 11_000_000
  )
  
  func (a *App) GetServerLimits() (*model.ServerLimits, *model.AppError) {
+ 	var limits = &model.ServerLimits{}
+ 
 diff --git a/server/cmd/mattermost/commands/cmdtestlib.go b/server/cmd/mostlymatter/commands/cmdtestlib.go
 similarity index 100%
 rename from server/cmd/mattermost/commands/cmdtestlib.go
@@ -80,7 +119,9 @@ rename to server/cmd/mostlymatter/commands/db.go
 index 17c96c0c45..4a5c210479 100644
 --- a/server/cmd/mattermost/commands/db.go
 +++ b/server/cmd/mostlymatter/commands/db.go
-@@ -34,13 +34,13 @@ var InitDbCmd = &cobra.Command{
+@@ -32,25 +32,25 @@ var InitDbCmd = &cobra.Command{
+ 	Short: "Initialize the database",
+ 	Long: `Initialize the database for a given DSN, executing the migrations and loading the custom defaults if any.
  
  This command should be run using a database configuration DSN.`,
  	Example: `  # you can use the config flag to pass the DSN
@@ -97,7 +138,7 @@ index 17c96c0c45..4a5c210479 100644
  	Args: cobra.NoArgs,
  	RunE: initDbCmdF,
  }
-@@ -48,7 +48,7 @@ This command should be run using a database configuration DSN.`,
+ 
  var ResetCmd = &cobra.Command{
  	Use:   "reset",
  	Short: "Reset the database to initial state",
@@ -106,25 +147,29 @@ index 17c96c0c45..4a5c210479 100644
  	RunE:  resetCmdF,
  }
  
+ var MigrateCmd = &cobra.Command{
+ 	Use:   "migrate",
 diff --git a/server/cmd/mattermost/commands/exec_command_test.go b/server/cmd/mostlymatter/commands/exec_command_test.go
 similarity index 100%
 rename from server/cmd/mattermost/commands/exec_command_test.go
 rename to server/cmd/mostlymatter/commands/exec_command_test.go
 diff --git a/server/cmd/mattermost/commands/export.go b/server/cmd/mostlymatter/commands/export.go
-similarity index 89%
+similarity index 92%
 rename from server/cmd/mattermost/commands/export.go
 rename to server/cmd/mostlymatter/commands/export.go
-index 5e2894ada4..f7e916958f 100644
+index ece6eebacf..bc9d31fe46 100644
 --- a/server/cmd/mattermost/commands/export.go
 +++ b/server/cmd/mostlymatter/commands/export.go
-@@ -21,38 +21,38 @@ import (
+@@ -18,26 +18,26 @@ import (
+ 	"github.com/spf13/cobra"
+ )
  
  var ExportCmd = &cobra.Command{
  	Use:   "export",
 -	Short: "Export data from Mattermost",
 -	Long:  "Export data from Mattermost in a format suitable for import into a third-party application or another Mattermost instance",
 +	Short: "Export data from Mostlymatter",
-+	Long:  "Export data from Mostlymatter in a format suitable for import into a third-party application or another Mattermost instance",
++	Long:  "Export data from Mostlymatter in a format suitable for import into a third-party application or another Mostlymatter instance",
  }
  
  var ScheduleExportCmd = &cobra.Command{
@@ -137,36 +182,6 @@ index 5e2894ada4..f7e916958f 100644
  	RunE:    scheduleExportCmdF,
  }
  
- var CsvExportCmd = &cobra.Command{
- 	Use:     "csv",
--	Short:   "Export data from Mattermost in CSV format",
--	Long:    "Export data from Mattermost in CSV format",
-+	Short:   "Export data from Mostlymatter in CSV format",
-+	Long:    "Export data from Mostlymatter in CSV format",
- 	Example: "export csv --exportFrom=12345",
- 	RunE:    buildExportCmdF("csv"),
- }
- 
- var ActianceExportCmd = &cobra.Command{
- 	Use:     "actiance",
--	Short:   "Export data from Mattermost in Actiance format",
--	Long:    "Export data from Mattermost in Actiance format",
-+	Short:   "Export data from Mostlymatter in Actiance format",
-+	Long:    "Export data from Mostlymatter in Actiance format",
- 	Example: "export actiance --exportFrom=12345",
- 	RunE:    buildExportCmdF("actiance"),
- }
- 
- var GlobalRelayZipExportCmd = &cobra.Command{
- 	Use:     "global-relay-zip",
--	Short:   "Export data from Mattermost into a zip file containing emails to send to Global Relay for debug and testing purposes only.",
--	Long:    "Export data from Mattermost into a zip file containing emails to send to Global Relay for debug and testing purposes only. This does not archive any information in Global Relay.",
-+	Short:   "Export data from Mostlymatter into a zip file containing emails to send to Global Relay for debug and testing purposes only.",
-+	Long:    "Export data from Mostlymatter into a zip file containing emails to send to Global Relay for debug and testing purposes only. This does not archive any information in Global Relay.",
- 	Example: "export global-relay-zip --exportFrom=12345",
- 	RunE:    buildExportCmdF("globalrelay-zip"),
- }
-@@ -60,7 +60,7 @@ var GlobalRelayZipExportCmd = &cobra.Command{
  var BulkExportCmd = &cobra.Command{
  	Use:     "bulk [file]",
  	Short:   "Export bulk data.",
@@ -175,18 +190,18 @@ index 5e2894ada4..f7e916958f 100644
  	Example: "export bulk bulk_data.json",
  	RunE:    bulkExportCmdF,
  	Args:    cobra.ExactArgs(1),
-diff --git a/server/cmd/mattermost/commands/export_test.go b/server/cmd/mostlymatter/commands/export_test.go
-similarity index 100%
-rename from server/cmd/mattermost/commands/export_test.go
-rename to server/cmd/mostlymatter/commands/export_test.go
+ }
+ 
 diff --git a/server/cmd/mattermost/commands/import.go b/server/cmd/mostlymatter/commands/import.go
 similarity index 98%
 rename from server/cmd/mattermost/commands/import.go
 rename to server/cmd/mostlymatter/commands/import.go
-index e02cebdc32..c76b9425a3 100644
+index 434403d830..d662c8af65 100644
 --- a/server/cmd/mattermost/commands/import.go
 +++ b/server/cmd/mostlymatter/commands/import.go
-@@ -32,7 +32,7 @@ var SlackImportCmd = &cobra.Command{
+@@ -30,11 +30,11 @@ var SlackImportCmd = &cobra.Command{
+ }
+ 
  var BulkImportCmd = &cobra.Command{
  	Use:     "bulk [file]",
  	Short:   "Import bulk data.",
@@ -195,6 +210,8 @@ index e02cebdc32..c76b9425a3 100644
  	Example: "  import bulk bulk_data.json",
  	RunE:    bulkImportCmdF,
  }
+ 
+ func init() {
 diff --git a/server/cmd/mattermost/commands/init.go b/server/cmd/mostlymatter/commands/init.go
 similarity index 100%
 rename from server/cmd/mattermost/commands/init.go
@@ -206,7 +223,9 @@ rename to server/cmd/mostlymatter/commands/jobserver.go
 index 60b570bea6..5ab12fc0cb 100644
 --- a/server/cmd/mattermost/commands/jobserver.go
 +++ b/server/cmd/mostlymatter/commands/jobserver.go
-@@ -18,7 +18,7 @@ import (
+@@ -16,11 +16,11 @@ import (
+ 	"github.com/mattermost/mattermost/server/v8/config"
+ )
  
  var JobserverCmd = &cobra.Command{
  	Use:   "jobserver",
@@ -215,7 +234,11 @@ index 60b570bea6..5ab12fc0cb 100644
  	RunE:  jobserverCmdF,
  }
  
-@@ -46,8 +46,8 @@ func jobserverCmdF(command *cobra.Command, args []string) error {
+ func init() {
+ 	JobserverCmd.Flags().Bool("nojobs", false, "Do not run jobs on this jobserver.")
+@@ -44,12 +44,12 @@ func jobserverCmdF(command *cobra.Command, args []string) error {
+ 	a.Srv().LoadLicense()
+ 
  	rctx := request.EmptyContext(a.Log())
  
  	// Run jobs
@@ -226,7 +249,11 @@ index 60b570bea6..5ab12fc0cb 100644
  
  	if !noJobs {
  		a.Srv().Jobs.StartWorkers()
-@@ -68,7 +68,7 @@ func jobserverCmdF(command *cobra.Command, args []string) error {
+ 		defer a.Srv().Jobs.StopWorkers()
+ 	}
+@@ -66,9 +66,9 @@ func jobserverCmdF(command *cobra.Command, args []string) error {
+ 	signalChan := make(chan os.Signal, 1)
+ 	signal.Notify(signalChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
  	<-signalChan
  
  	// Cleanup anything that isn't handled by a defer statement
@@ -250,7 +277,9 @@ rename to server/cmd/mostlymatter/commands/root.go
 index 692ac30f53..8d2081ab21 100644
 --- a/server/cmd/mattermost/commands/root.go
 +++ b/server/cmd/mostlymatter/commands/root.go
-@@ -18,9 +18,9 @@ func Run(args []string) error {
+@@ -16,13 +16,13 @@ func Run(args []string) error {
+ 	RootCmd.SetArgs(args)
+ 	return RootCmd.Execute()
  }
  
  var RootCmd = &cobra.Command{
@@ -262,7 +291,11 @@ index 692ac30f53..8d2081ab21 100644
  	PersistentPreRun: func(cmd *cobra.Command, args []string) {
  		checkForRootUser()
  	},
-@@ -33,6 +33,6 @@ func init() {
+ }
+ 
+@@ -31,8 +31,8 @@ func init() {
+ }
+ 
  // checkForRootUser logs a warning if the process is running as root
  func checkForRootUser() {
  	if os.Geteuid() == 0 {
@@ -274,10 +307,12 @@ diff --git a/server/cmd/mattermost/commands/server.go b/server/cmd/mostlymatter/
 similarity index 96%
 rename from server/cmd/mattermost/commands/server.go
 rename to server/cmd/mostlymatter/commands/server.go
-index 5f73ba0501..2de7469081 100644
+index 76d33bfaf3..0100abc12a 100644
 --- a/server/cmd/mattermost/commands/server.go
 +++ b/server/cmd/mostlymatter/commands/server.go
-@@ -27,7 +27,7 @@ import (
+@@ -24,11 +24,11 @@ import (
+ 	"github.com/mattermost/mattermost/server/v8/config"
+ )
  
  var serverCmd = &cobra.Command{
  	Use:          "server",
@@ -286,7 +321,11 @@ index 5f73ba0501..2de7469081 100644
  	RunE:         serverCmdF,
  	SilenceUsage: true,
  }
-@@ -41,7 +41,7 @@ func serverCmdF(command *cobra.Command, args []string) error {
+ 
+ func init() {
+@@ -38,11 +38,11 @@ func init() {
+ 
+ func serverCmdF(command *cobra.Command, args []string) error {
  	interruptChan := make(chan os.Signal, 1)
  
  	if err := utils.TranslationsPreInit(); err != nil {
@@ -295,6 +334,8 @@ index 5f73ba0501..2de7469081 100644
  	}
  
  	customDefaults, err := loadCustomDefaults()
+ 	if err != nil {
+ 		mlog.Warn("Error loading custom configuration defaults: " + err.Error())
 diff --git a/server/cmd/mattermost/commands/server_test.go b/server/cmd/mostlymatter/commands/server_test.go
 similarity index 100%
 rename from server/cmd/mattermost/commands/server_test.go
@@ -318,7 +359,9 @@ rename to server/cmd/mostlymatter/commands/version.go
 index 5a5a5f160d..b0c0dc11ff 100644
 --- a/server/cmd/mattermost/commands/version.go
 +++ b/server/cmd/mostlymatter/commands/version.go
-@@ -16,7 +16,7 @@ var VersionCmd = &cobra.Command{
+@@ -14,11 +14,11 @@ var VersionCmd = &cobra.Command{
+ 	Short: "Display version information",
+ 	RunE:  versionCmdF,
  }
  
  func init() {
@@ -327,6 +370,8 @@ index 5a5a5f160d..b0c0dc11ff 100644
  	VersionCmd.Flags().MarkDeprecated("skip-server-start", "This flag is not necessary anymore and the flag will be removed in the future releases. Consider removing it from your scripts.")
  	RootCmd.AddCommand(VersionCmd)
  }
+ 
+ func versionCmdF(command *cobra.Command, args []string) error {
 diff --git a/server/cmd/mattermost/commands/version_test.go b/server/cmd/mostlymatter/commands/version_test.go
 similarity index 100%
 rename from server/cmd/mattermost/commands/version_test.go
@@ -338,7 +383,9 @@ rename to server/cmd/mostlymatter/main.go
 index 5fb4b4a005..1783e812f3 100644
 --- a/server/cmd/mattermost/main.go
 +++ b/server/cmd/mostlymatter/main.go
-@@ -6,7 +6,7 @@ package main
+@@ -4,11 +4,11 @@
+ package main
+ 
  import (
  	"os"
  
@@ -347,6 +394,8 @@ index 5fb4b4a005..1783e812f3 100644
  	// Import and register app layer slash commands
  	_ "github.com/mattermost/mattermost/server/v8/channels/app/slashcommands"
  	// Plugins
+ 	_ "github.com/mattermost/mattermost/server/v8/channels/app/oauthproviders/gitlab"
+ 
 diff --git a/server/cmd/mattermost/main_test.go b/server/cmd/mostlymatter/main_test.go
 similarity index 96%
 rename from server/cmd/mattermost/main_test.go
@@ -354,7 +403,9 @@ rename to server/cmd/mostlymatter/main_test.go
 index 8ec8a0bea4..c661c2012c 100644
 --- a/server/cmd/mattermost/main_test.go
 +++ b/server/cmd/mostlymatter/main_test.go
-@@ -12,7 +12,7 @@ import (
+@@ -10,11 +10,11 @@ import (
+ 	"testing"
+ )
  
  // TestRunMain can be used to track code coverage in integration tests.
  // To run this:
@@ -363,3 +414,5 @@ index 8ec8a0bea4..c661c2012c 100644
  // ./mattermost.test -test.run="^TestRunMain$" -test.coverprofile=coverage.out
  // And then run your integration tests.
  func TestRunMain(t *testing.T) {
+ 	main()
+ }
