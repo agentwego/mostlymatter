@@ -33,11 +33,15 @@ build:
     - cd server
     - make validate-go-version
     - make setup-go-work
+    - make build-linux-arm64
     - make build-linux-amd64
     - cd -
     - >
       mv server/bin/mostlymatter \
-         "mostlymatter-$(basename "$CI_COMMIT_TAG" -limitless)"
+         "mostlymatter-amd64-$(basename "$CI_COMMIT_TAG" -limitless)"
+    - >
+      mv server/bin/linux_arm64/mostlymatter \
+         "mostlymatter-arm64-$(basename "$CI_COMMIT_TAG" -limitless)"
   cache:
     key: "$CI_COMMIT_TAG"
     policy: push
@@ -62,25 +66,46 @@ publish:
     - chmod 600 ~/.minisign/minisign.key
     - >
       echo "$MINISIG_PWD" |
-        minisign -Sm "mostlymatter-$(basename "$CI_COMMIT_TAG" -limitless)"
+        minisign -Sm "mostlymatter-amd64-$(basename "$CI_COMMIT_TAG" -limitless)"
     - >
-      sha512sum "mostlymatter-$(basename "$CI_COMMIT_TAG" -limitless)" \
-                > "mostlymatter-$(basename "$CI_COMMIT_TAG" -limitless).sha512"
+      sha512sum "mostlymatter-amd64-$(basename "$CI_COMMIT_TAG" -limitless)" \
+                > "mostlymatter-amd64-$(basename "$CI_COMMIT_TAG" -limitless).sha512"
+    - >
+      echo "$MINISIG_PWD" |
+        minisign -Sm "mostlymatter-arm64-$(basename "$CI_COMMIT_TAG" -limitless)"
+    - >
+      sha512sum "mostlymatter-arm64-$(basename "$CI_COMMIT_TAG" -limitless)" \
+                > "mostlymatter-arm64-$(basename "$CI_COMMIT_TAG" -limitless).sha512"
   script:
     - eval $(ssh-agent -s)
     - ssh-add <(echo "${DEPLOYEMENT_KEY}" | base64 --decode -i)
     - >
-      echo "put mostlymatter-$(basename "$CI_COMMIT_TAG" -limitless)"         |
+      echo "put mostlymatter-amd64-$(basename "$CI_COMMIT_TAG" -limitless)"         |
         sftp -o "VerifyHostKeyDNS yes" \
              -o "StrictHostKeyChecking accept-new" \
              ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
     - >
-      echo "put mostlymatter-$(basename "$CI_COMMIT_TAG" -limitless).sha512"  |
+      echo "put mostlymatter-amd64-$(basename "$CI_COMMIT_TAG" -limitless).minisig" |
         sftp -o "VerifyHostKeyDNS yes" \
              -o "StrictHostKeyChecking accept-new" \
              ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
     - >
-      echo "put mostlymatter-$(basename "$CI_COMMIT_TAG" -limitless).minisig" |
+      echo "put mostlymatter-amd64-$(basename "$CI_COMMIT_TAG" -limitless).sha512"  |
+        sftp -o "VerifyHostKeyDNS yes" \
+             -o "StrictHostKeyChecking accept-new" \
+             ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
+    - >
+      echo "put mostlymatter-arm64-$(basename "$CI_COMMIT_TAG" -limitless)"         |
+        sftp -o "VerifyHostKeyDNS yes" \
+             -o "StrictHostKeyChecking accept-new" \
+             ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
+    - >
+      echo "put mostlymatter-arm64-$(basename "$CI_COMMIT_TAG" -limitless).minisig" |
+        sftp -o "VerifyHostKeyDNS yes" \
+             -o "StrictHostKeyChecking accept-new" \
+             ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
+    - >
+      echo "put mostlymatter-arm64-$(basename "$CI_COMMIT_TAG" -limitless).sha512"  |
         sftp -o "VerifyHostKeyDNS yes" \
              -o "StrictHostKeyChecking accept-new" \
              ${DEPLOYEMENT_USER}@${DEPLOYEMENT_HOST}:public/
@@ -94,6 +119,7 @@ publish:
     key: "$CI_COMMIT_TAG"
     policy: pull
     paths:
-      - "mostlymatter-$CI_COMMIT_TAG"
+      - "mostlymatter-amd64-$CI_COMMIT_TAG"
+      - "mostlymatter-arm64-$CI_COMMIT_TAG"
   rules:
     - if: '$DEPLOYEMENT_HOST && $DEPLOYEMENT_USER && $DEPLOYEMENT_KEY && $MINISIG_KEY && $MINISIG_PWD && $CI_COMMIT_TAG =~ /limitless/'
