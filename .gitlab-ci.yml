@@ -7,6 +7,8 @@ stages:
 variables:
   DEBIAN_FRONTEND: noninteractive
   PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/usr/local/go/bin
+  GO_VERSION: 1.24.6
+  GO_HASHSUM: bbca37cc395c974ffa4893ee35819ad23ebb27426df87af92e93a9ec66ef8712
 
 build:
   stage: build
@@ -16,13 +18,13 @@ build:
     - apt install -qq -y build-essential libpng-dev libpng16-16 wget curl git
     - ulimit -n 8096
     - cd /tmp
-    - wget -q "https://go.dev/dl/go1.22.3.linux-amd64.tar.gz"
+    - wget -q "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
     - >
       echo \
-        "8920ea521bad8f6b7bc377b4824982e011c19af27df88a815e3586ea895f1b36  go1.22.3.linux-amd64.tar.gz" \
-        > go1.22.3.linux-amd64.tar.gz.sha256sum
-    - sha256sum -c go1.22.3.linux-amd64.tar.gz.sha256sum
-    - tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz
+        "${GO_HASHSUM}  go${GO_VERSION}.linux-amd64.tar.gz" \
+        > "go${GO_VERSION}.linux-amd64.tar.gz.sha256sum"
+    - sha256sum -c "go${GO_VERSION}.linux-amd64.tar.gz.sha256sum"
+    - tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
     - cd -
   script:
     - >
