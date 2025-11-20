@@ -1,0 +1,46 @@
+# Git files
+.git
+.github
+.gitignore
+.gitattributes
+.gitlab-ci.yml
+.gitpod.yml
+
+# Build artifacts
+server/bin
+server/dist
+webapp/node_modules
+webapp/dist
+webapp/.npm
+e2e-tests/node_modules
+api/node_modules
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+*_test.go
+**/test/**
+**/tests/**
+e2e-tests
+
+# Temporary files
+tmp
+temp
+*.tmp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# CI/CD
+.gitlab-ci.yml
