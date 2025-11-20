@@ -1,3 +1,10 @@
+# Dockerfile for building Mattermost server from source
+#
+# Build:    docker build -t mattermost .
+# Run:      docker run -d -p 8065:8065 mattermost
+#
+# For production use with docker-compose, see docker-compose.yaml
+
 # Build stage
 FROM golang:1.14-alpine AS build
 
