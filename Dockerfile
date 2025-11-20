@@ -55,7 +55,7 @@ COPY --from=builder --chown=${PUID}:${PGID} /build/server/bin/mostlymatter /matt
 COPY --from=builder /build/server/build/passwd /etc/passwd
 
 # We should refrain from running as privileged user
-USER ${PUID}:${PGID}
+USER mattermost
 
 # Configure entrypoint and command
 WORKDIR /mattermost
