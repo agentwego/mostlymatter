@@ -1,7 +1,5 @@
 # Git files
-.git
 .github
-.gitignore
 .gitattributes
 .gitlab-ci.yml
 .gitpod.yml

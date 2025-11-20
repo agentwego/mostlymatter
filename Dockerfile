@@ -35,7 +35,7 @@ RUN git apply limitless.patch && \
     cd server && \
     make validate-go-version && \
     make setup-go-work && \
-    make build-linux
+    make build-linux-amd64
 
 # Runtime stage - using distroless for minimal attack surface
 FROM gcr.io/distroless/base-debian12
