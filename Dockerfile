@@ -35,7 +35,9 @@ RUN git apply limitless.patch && \
     cd server && \
     make validate-go-version && \
     make setup-go-work && \
-    make build-linux-$(dpkg --print-architecture)
+    make build-linux-$(dpkg --print-architecture) && \
+    mkdir -p ../config && \
+    OUTPUT_CONFIG=../config/config.json go run ./scripts/config_generator
 
 # Runtime stage - using distroless for minimal attack surface
 FROM gcr.io/distroless/base-debian12
@@ -50,6 +52,10 @@ ENV MM_SERVICESETTINGS_ENABLELOCALMODE="true"
 
 # Create directory structure for mattermost with proper ownership
 COPY --from=builder --chown=${PUID}:${PGID} /build/server/bin/mostlymatter /mattermost/bin/mostlymatter
+COPY --from=builder --chown=${PUID}:${PGID} /build/server/i18n /mattermost/i18n
+COPY --from=builder --chown=${PUID}:${PGID} /build/server/fonts /mattermost/fonts
+COPY --from=builder --chown=${PUID}:${PGID} /build/server/templates /mattermost/templates
+COPY --from=builder --chown=${PUID}:${PGID} /build/config/config.json /mattermost/config/config.json
 
 # Copy passwd file with mattermost user
 COPY --from=builder /build/server/build/passwd /etc/passwd
