@@ -49,7 +49,7 @@ ARG PGID=2000
 
 # Install dependencies
 RUN apt-get update && \
-    apt-get install -y ca-certificates curl && \
+    apt-get install -y ca-certificates curl wget && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -g ${PGID} mattermost && \
     useradd -u ${PUID} -g ${PGID} -m -d /mattermost mattermost
