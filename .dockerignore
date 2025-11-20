@@ -1,0 +1,64 @@
+# Git files
+.git
+.github
+.gitignore
+
+# Documentation
+*.md
+!README.md
+NOTICE.txt
+LICENSE.txt
+SECURITY.md
+CONTRIBUTING.md
+CHANGELOG.md
+CODEOWNERS
+
+# Build artifacts
+dist/
+bin/
+*.out
+*.test
+*.log
+*.log.jsonl
+cover.out
+ecover.out
+npm-debug.log
+
+# Data and logs
+data/
+logs/
+
+# Development files
+.editorconfig
+.codecov.yml
+.golangci.yml
+.sass-lint.yml
+
+# CircleCI and other CI configs
+.circleci/
+
+# Docker files (don't need these in the build context)
+docker-compose*.yml
+docker-compose*.yaml
+Dockerfile
+.dockerignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test data
+manualtesting/
+testlib/
+tests/
+
+# Temp files
+tmp/
+temp/
