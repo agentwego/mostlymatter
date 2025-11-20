@@ -15,7 +15,12 @@ ENV GO111MODULE=on
 
 # Install build dependencies
 RUN apt-get update && \
-    apt-get install -qq -y build-essential libpng-dev libpng16-16 wget curl git ca-certificates && \
+    apt-get install -qq -y build-essential libpng-dev libpng16-16 wget curl git ca-certificates gnupg && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
+    apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
 # Download and install Go
@@ -36,6 +41,7 @@ RUN git apply limitless.patch && \
     make validate-go-version && \
     make setup-go-work && \
     make build-linux-$(dpkg --print-architecture) && \
+    make build-client && \
     mkdir -p ../config && \
     OUTPUT_CONFIG=../config/config.json go run ./scripts/config_generator && \
     mkdir -p /build/empty_dirs/data /build/empty_dirs/logs /build/empty_dirs/plugins /build/empty_dirs/client/plugins
@@ -63,6 +69,7 @@ COPY --from=builder --chown=${PUID}:${PGID} /build/server/bin/mostlymatter /matt
 COPY --from=builder --chown=${PUID}:${PGID} /build/server/i18n /mattermost/i18n
 COPY --from=builder --chown=${PUID}:${PGID} /build/server/fonts /mattermost/fonts
 COPY --from=builder --chown=${PUID}:${PGID} /build/server/templates /mattermost/templates
+COPY --from=builder --chown=${PUID}:${PGID} /build/webapp/channels/dist /mattermost/client
 COPY --from=builder --chown=${PUID}:${PGID} /build/config/config.json /mattermost/config/config.json
 COPY --from=builder --chown=${PUID}:${PGID} /build/empty_dirs /mattermost/
 
