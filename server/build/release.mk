@@ -5,6 +5,7 @@ build-linux: build-linux-amd64 build-linux-arm64
 build-linux-amd64:
 	@echo Build Linux amd64
 ifeq ($(BUILDER_GOOS_GOARCH),"linux_amd64")
+	mkdir -p $(GOBIN)
 	env GOOS=linux GOARCH=amd64 $(GO) build -o $(GOBIN) $(GOFLAGS) -trimpath -tags '$(BUILD_TAGS) production' -ldflags '$(LDFLAGS)' ./...
 else
 	mkdir -p $(GOBIN)/linux_amd64
@@ -26,6 +27,7 @@ ifeq ($(FIPS_ENABLED),true)
 else
 	@echo Build Linux arm64
 ifeq ($(BUILDER_GOOS_GOARCH),"linux_arm64")
+	mkdir -p $(GOBIN)
 	env GOOS=linux GOARCH=arm64 $(GO) build -o $(GOBIN) $(GOFLAGS) -trimpath -tags '$(BUILD_TAGS) production' -ldflags '$(LDFLAGS)' ./...
 else
 	mkdir -p $(GOBIN)/linux_arm64
@@ -36,6 +38,7 @@ endif
 build-osx:
 	@echo Build OSX amd64
 ifeq ($(BUILDER_GOOS_GOARCH),"darwin_amd64")
+	mkdir -p $(GOBIN)
 	env GOOS=darwin GOARCH=amd64 $(GO) build -o $(GOBIN) $(GOFLAGS) -trimpath -tags '$(BUILD_TAGS) production' -ldflags '$(LDFLAGS)' ./...
 else
 	mkdir -p $(GOBIN)/darwin_amd64
@@ -43,6 +46,7 @@ else
 endif
 	@echo Build OSX arm64
 ifeq ($(BUILDER_GOOS_GOARCH),"darwin_arm64")
+	mkdir -p $(GOBIN)
 	env GOOS=darwin GOARCH=arm64 $(GO) build -o $(GOBIN) $(GOFLAGS) -trimpath -tags '$(BUILD_TAGS) production' -ldflags '$(LDFLAGS)' ./...
 else
 	mkdir -p $(GOBIN)/darwin_arm64
@@ -52,6 +56,7 @@ endif
 build-windows:
 	@echo Build Windows amd64
 ifeq ($(BUILDER_GOOS_GOARCH),"windows_amd64")
+	mkdir -p $(GOBIN)
 	env GOOS=windows GOARCH=amd64 $(GO) build -o $(GOBIN) $(GOFLAGS) -trimpath -tags '$(BUILD_TAGS) production' -ldflags '$(LDFLAGS)' ./...
 else
 	mkdir -p $(GOBIN)/windows_amd64
