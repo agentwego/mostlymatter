@@ -40,12 +40,19 @@ RUN git apply limitless.patch && \
     OUTPUT_CONFIG=../config/config.json go run ./scripts/config_generator && \
     mkdir -p /build/empty_dirs/data /build/empty_dirs/logs /build/empty_dirs/plugins /build/empty_dirs/client/plugins
 
-# Runtime stage - using distroless for minimal attack surface
-FROM gcr.io/distroless/base-debian12
+# Runtime stage - using debian-slim for compatibility
+FROM debian:bookworm-slim
 
 # Build Arguments
 ARG PUID=2000
 ARG PGID=2000
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd -g ${PGID} mattermost && \
+    useradd -u ${PUID} -g ${PGID} -m -d /mattermost mattermost
 
 # Some ENV variables
 ENV PATH="/mattermost/bin:${PATH}"
@@ -59,9 +66,6 @@ COPY --from=builder --chown=${PUID}:${PGID} /build/server/templates /mattermost/
 COPY --from=builder --chown=${PUID}:${PGID} /build/config/config.json /mattermost/config/config.json
 COPY --from=builder --chown=${PUID}:${PGID} /build/empty_dirs /mattermost/
 
-# Copy passwd file with mattermost user
-COPY --from=builder /build/server/build/passwd /etc/passwd
-
 # We should refrain from running as privileged user
 USER mattermost
 
@@ -70,7 +74,7 @@ WORKDIR /mattermost
 
 # Healthcheck to make sure container is ready
 HEALTHCHECK --interval=30s --timeout=10s \
-  CMD ["/mattermost/bin/mostlymatter", "version"]
+  CMD curl -f http://localhost:8065/api/v4/system/ping || exit 1
 
 CMD ["/mattermost/bin/mostlymatter"]
 
