@@ -37,7 +37,8 @@ RUN git apply limitless.patch && \
     make setup-go-work && \
     make build-linux-$(dpkg --print-architecture) && \
     mkdir -p ../config && \
-    OUTPUT_CONFIG=../config/config.json go run ./scripts/config_generator
+    OUTPUT_CONFIG=../config/config.json go run ./scripts/config_generator && \
+    mkdir -p /build/empty_dirs/data /build/empty_dirs/logs /build/empty_dirs/plugins /build/empty_dirs/client/plugins
 
 # Runtime stage - using distroless for minimal attack surface
 FROM gcr.io/distroless/base-debian12
@@ -56,6 +57,7 @@ COPY --from=builder --chown=${PUID}:${PGID} /build/server/i18n /mattermost/i18n
 COPY --from=builder --chown=${PUID}:${PGID} /build/server/fonts /mattermost/fonts
 COPY --from=builder --chown=${PUID}:${PGID} /build/server/templates /mattermost/templates
 COPY --from=builder --chown=${PUID}:${PGID} /build/config/config.json /mattermost/config/config.json
+COPY --from=builder --chown=${PUID}:${PGID} /build/empty_dirs /mattermost/
 
 # Copy passwd file with mattermost user
 COPY --from=builder /build/server/build/passwd /etc/passwd
