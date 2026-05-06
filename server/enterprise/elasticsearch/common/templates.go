@@ -11,6 +11,59 @@ import (
 	"github.com/mattermost/mattermost/server/public/model"
 )
 
+func textAnalysisSettings() *types.IndexSettingsAnalysis {
+	return &types.IndexSettingsAnalysis{
+		CharFilter: map[string]types.CharFilter{
+			"leading_underscores": map[string]any{
+				"type":        "pattern_replace",
+				"pattern":     `(^|[\s\r\n])_`,
+				"replacement": "$1",
+			},
+			"trailing_underscores": map[string]any{
+				"type":        "pattern_replace",
+				"pattern":     `_([\s\r\n]|$)`,
+				"replacement": "$1",
+			},
+		},
+		Analyzer: map[string]types.Analyzer{
+			"mm_lowercaser": map[string]any{
+				"tokenizer": "standard",
+				"filter": []string{
+					"lowercase",
+					"mm_snowball",
+					"mm_stop",
+				},
+				"char_filter": []string{
+					"leading_underscores",
+					"trailing_underscores",
+				},
+			},
+			"mm_url": map[string]any{
+				"tokenizer": "pattern",
+				"pattern":   "\\W",
+				"lowercase": true,
+			},
+		},
+		Filter: map[string]types.TokenFilter{
+			"mm_snowball": map[string]any{
+				"type":     "snowball",
+				"language": "English",
+			},
+			"mm_stop": map[string]any{
+				"type":      "stop",
+				"stopwords": "_english_",
+			},
+		},
+		Normalizer: map[string]types.Normalizer{
+			"mm_hashtag": map[string]any{
+				"type":        "custom",
+				"char_filter": []string{},
+				"filter":      []string{"lowercase"},
+			},
+		},
+	}
+}
+
 func GetPostTemplate(cfg *model.Config) *putindextemplate.Request {
 	mappings := &types.TypeMapping{
 		Properties: map[string]types.Property{
@@ -42,55 +95,7 @@ func GetPostTemplate(cfg *model.Config) *putindextemplate.Request {
 					NumberOfShards:   strconv.Itoa(*cfg.ElasticsearchSettings.PostIndexShards),
 					NumberOfReplicas: strconv.Itoa(*cfg.ElasticsearchSettings.PostIndexReplicas),
 				},
-				Analysis: &types.IndexSettingsAnalysis{
-					CharFilter: map[string]types.CharFilter{
-						"leading_underscores": map[string]any{
-							"type":        "pattern_replace",
-							"pattern":     `(^|[\s\r\n])_`,
-							"replacement": "$1",
-						},
-						"trailing_underscores": map[string]any{
-							"type":        "pattern_replace",
-							"pattern":     `_([\s\r\n]|$)`,
-							"replacement": "$1",
-						},
-					},
-					Analyzer: map[string]types.Analyzer{
-						"mm_lowercaser": map[string]any{
-							"tokenizer": "icu_tokenizer",
-							"filter": []string{
-								"icu_normalizer",
-								"mm_snowball",
-								"mm_stop",
-							},
-							"char_filter": []string{
-								"leading_underscores",
-								"trailing_underscores",
-							},
-						},
-						"mm_url": map[string]any{
-							"tokenizer": "pattern",
-							"pattern":   "\\W",
-							"lowercase": true,
-						}},
-					Filter: map[string]types.TokenFilter{
-						"mm_snowball": map[string]any{
-							"type":     "snowball",
-							"language": "English",
-						},
-						"mm_stop": map[string]any{
-							"type":      "stop",
-							"stopwords": "_english_",
-						},
-					},
-					Normalizer: map[string]types.Normalizer{
-						"mm_hashtag": map[string]any{
-							"type":        "custom",
-							"char_filter": []string{},
-							"filter":      []string{"lowercase", "icu_normalizer"},
-						},
-					},
-				},
+				Analysis: textAnalysisSettings(),
 			},
 			Mappings: mappings,
 		},
@@ -119,44 +124,7 @@ func GetFileInfoTemplate(cfg *model.Config) *putindextemplate.Request {
 					NumberOfShards:   strconv.Itoa(*cfg.ElasticsearchSettings.PostIndexShards),
 					NumberOfReplicas: strconv.Itoa(*cfg.ElasticsearchSettings.PostIndexReplicas),
 				},
-				Analysis: &types.IndexSettingsAnalysis{
-					CharFilter: map[string]types.CharFilter{
-						"leading_underscores": map[string]any{
-							"type":        "pattern_replace",
-							"pattern":     `(^|[\s\r\n])_`,
-							"replacement": "$1",
-						},
-						"trailing_underscores": map[string]any{
-							"type":        "pattern_replace",
-							"pattern":     `_([\s\r\n]|$)`,
-							"replacement": "$1",
-						},
-					},
-					Analyzer: map[string]types.Analyzer{
-						"mm_lowercaser": map[string]any{
-							"tokenizer": "icu_tokenizer",
-							"filter": []string{
-								"icu_normalizer",
-								"mm_snowball",
-								"mm_stop",
-							},
-							"char_filter": []string{
-								"leading_underscores",
-								"trailing_underscores",
-							},
-						},
-					},
-					Filter: map[string]types.TokenFilter{
-						"mm_snowball": map[string]any{
-							"type":     "snowball",
-							"language": "English",
-						},
-						"mm_stop": map[string]any{
-							"type":      "stop",
-							"stopwords": "_english_",
-						},
-					},
-				},
+				Analysis: textAnalysisSettings(),
 			},
 			Mappings: mappings,
 		},
