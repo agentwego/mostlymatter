@@ -91,7 +91,7 @@ func (os *OpensearchInterfaceImpl) IsIndexingSync() bool {
 }
 
 func (os *OpensearchInterfaceImpl) Start() *model.AppError {
-	if license := os.Platform.License(); license == nil || !*license.Features.Elasticsearch || !*os.Platform.Config().ElasticsearchSettings.EnableIndexing {
+	if !*os.Platform.Config().ElasticsearchSettings.EnableIndexing {
 		return nil
 	}
 

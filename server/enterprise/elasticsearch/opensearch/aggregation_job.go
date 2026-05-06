@@ -45,8 +45,7 @@ type OpensearchAggregatorWorker struct {
 	logger      mlog.LoggerIFace
 	fileBackend filestore.FileBackend
 
-	client  *opensearchapi.Client
-	license func() *model.License
+	client *opensearchapi.Client
 }
 
 func (esi *OpensearchAggregatorInterfaceImpl) MakeWorker() model.Worker {
@@ -58,7 +57,6 @@ func (esi *OpensearchAggregatorInterfaceImpl) MakeWorker() model.Worker {
 		jobServer:   esi.Server.Jobs,
 		logger:      esi.Server.Jobs.Logger().With(mlog.String("worker_name", workerName)),
 		fileBackend: esi.Server.Platform().FileBackend(),
-		license:     esi.Server.License,
 		stopped:     true,
 	}
 
@@ -107,10 +105,6 @@ func (worker *OpensearchAggregatorWorker) Run() {
 }
 
 func (worker *OpensearchAggregatorWorker) IsEnabled(cfg *model.Config) bool {
-	if license := worker.license(); license == nil || !*license.Features.Elasticsearch {
-		return false
-	}
-
 	if *cfg.ElasticsearchSettings.EnableIndexing {
 		return true
 	}
