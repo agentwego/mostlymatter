@@ -40,8 +40,10 @@ RUN git apply limitless.patch && \
     cd server && \
     make validate-go-version && \
     make setup-go-work && \
-    make build-linux-$(dpkg --print-architecture) && \
+    BUILD_TAGS=sourceavailable make build-linux-$(dpkg --print-architecture) && \
+    cd .. && \
     make build-client && \
+    cd server && \
     mkdir -p ../config && \
     OUTPUT_CONFIG=../config/config.json go run ./scripts/config_generator && \
     mkdir -p /build/empty_dirs/data /build/empty_dirs/logs /build/empty_dirs/plugins /build/empty_dirs/client/plugins
