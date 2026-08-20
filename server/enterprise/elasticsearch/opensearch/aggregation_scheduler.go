@@ -21,10 +21,6 @@ type OpenSearchAggregatorScheduler struct {
 }
 
 func (s *OpenSearchAggregatorScheduler) Enabled(cfg *model.Config) bool {
-	if license := s.server.License(); license == nil || !*license.Features.Elasticsearch {
-		return false
-	}
-
 	if *cfg.ElasticsearchSettings.EnableIndexing {
 		return true
 	}

@@ -40,7 +40,7 @@ func TestOpenSearchIndexerJobIsEnabled(t *testing.T) {
 		assert.Equal(t, result, true)
 	})
 
-	t.Run("there is NO license then job is disabled", func(t *testing.T) {
+	t.Run("there is NO license then opensearch job is enabled when opensearch indexing is configured", func(t *testing.T) {
 		th := api4.SetupEnterpriseWithStoreMock(t)
 
 		th.Server.SetLicense(nil)
@@ -52,13 +52,14 @@ func TestOpenSearchIndexerJobIsEnabled(t *testing.T) {
 
 		config := &model.Config{
 			ElasticsearchSettings: model.ElasticsearchSettings{
+				Backend:        new(model.ElasticsearchSettingsOSBackend),
 				EnableIndexing: new(true),
 			},
 		}
 
 		result := worker.IsEnabled(config)
 
-		assert.Equal(t, result, false)
+		assert.Equal(t, result, true)
 	})
 }
 

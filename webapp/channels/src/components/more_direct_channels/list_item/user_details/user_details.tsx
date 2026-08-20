@@ -39,10 +39,10 @@ export default function UserDetails(props: Props): JSX.Element {
 
     // Fetch remote info when component mounts for remote users
     useEffect(() => {
-        if (option.remote_id) {
+        if (option.remote_id && !remoteDisplayName) {
             actions.fetchRemoteClusterInfo(option.remote_id, true);
         }
-    }, [option.remote_id]);
+    }, [option.remote_id, remoteDisplayName, actions.fetchRemoteClusterInfo]);
 
     const {
         id,

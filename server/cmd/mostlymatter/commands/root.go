@@ -18,9 +18,9 @@ func Run(args []string) error {
 }
 
 var RootCmd = &cobra.Command{
-	Use:   "mattermost",
+	Use:   "mostlymatter",
 	Short: "Open source, self-hosted Slack-alternative",
-	Long:  `Mattermost offers workplace messaging across web, PC and phones with archiving, search and integration with your existing systems. Documentation available at https://docs.mattermost.com`,
+	Long:  `Mostlymatter offers workplace messaging across web, PC and phones with archiving, search and integration with your existing systems. Documentation available at https://docs.mattermost.com`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		checkForRootUser()
 	},
@@ -33,6 +33,6 @@ func init() {
 // checkForRootUser logs a warning if the process is running as root
 func checkForRootUser() {
 	if os.Geteuid() == 0 {
-		mlog.Warn("Running Mattermost as root is not recommended. Please use a non-root user.")
+		mlog.Warn("Running Mostlymatter as root is not recommended. Please use a non-root user.")
 	}
 }

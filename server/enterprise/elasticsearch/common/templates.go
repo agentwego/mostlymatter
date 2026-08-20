@@ -128,9 +128,8 @@ func GetPostTemplate(cfg *model.Config, opts ...func(*types.IndexTemplateMapping
 				},
 				Analyzer: map[string]types.Analyzer{
 					"mm_lowercaser": map[string]any{
-						"tokenizer": "icu_tokenizer",
+						"tokenizer": "standard",
 						"filter": []string{
-							"icu_normalizer",
 							"mm_snowball",
 							"mm_stop",
 						},
@@ -159,7 +158,7 @@ func GetPostTemplate(cfg *model.Config, opts ...func(*types.IndexTemplateMapping
 					"mm_hashtag": map[string]any{
 						"type":        "custom",
 						"char_filter": []string{},
-						"filter":      []string{"lowercase", "icu_normalizer"},
+						"filter":      []string{"lowercase"},
 					},
 				},
 			},
@@ -237,9 +236,8 @@ func GetFileInfoTemplate(cfg *model.Config) *putindextemplate.Request {
 					},
 					Analyzer: map[string]types.Analyzer{
 						"mm_lowercaser": map[string]any{
-							"tokenizer": "icu_tokenizer",
+							"tokenizer": "standard",
 							"filter": []string{
-								"icu_normalizer",
 								"mm_snowball",
 								"mm_stop",
 							},

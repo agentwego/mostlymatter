@@ -1,3 +1,9 @@
+# Mostlymatter
+
+This repository is a public Mostlymatter fork of Mattermost. It keeps the upstream server while carrying the fork's unlimited seat limits, OpenSearch support without an Enterprise license, and Redis-backed cache integration.
+
+The `release-11.8.4` update is based on the upstream Mattermost `v11.8.4` release. See [MOSTLYMATTER_HOW_TO.md](MOSTLYMATTER_HOW_TO.md) for the fork maintenance workflow.
+
 # [![Mattermost logo](https://user-images.githubusercontent.com/7205829/137170381-fe86eef0-bccc-4fdd-8e92-b258884ebdd7.png)](https://mattermost.com)
 
 [Mattermost](https://mattermost.com) is an open core, self-hosted collaboration platform that offers chat, workflow automation, voice calling, screen sharing, and AI integration. This repo is the primary source for core development on the Mattermost platform; it's written in Go and React, runs as a single Linux binary, and relies on PostgreSQL. A new compiled version is released under an MIT license every month on the 16th.

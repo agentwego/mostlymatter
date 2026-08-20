@@ -200,15 +200,15 @@ linters:
           channels/store/storetest/team_store.go|\
           channels/store/storetest/thread_store.go|\
           channels/store/storetest/user_store.go|\
-          cmd/mattermost/commands/cmdtestlib.go|\
-          cmd/mattermost/commands/db.go|\
-          cmd/mattermost/commands/export.go|\
-          cmd/mattermost/commands/import.go|\
-          cmd/mattermost/commands/jobserver.go|\
-          cmd/mattermost/commands/server.go|\
-          cmd/mattermost/commands/server_test.go|\
-          cmd/mattermost/commands/test.go|\
-          cmd/mattermost/commands/version.go|\
+          cmd/mostlymatter/commands/cmdtestlib.go|\
+          cmd/mostlymatter/commands/db.go|\
+          cmd/mostlymatter/commands/export.go|\
+          cmd/mostlymatter/commands/import.go|\
+          cmd/mostlymatter/commands/jobserver.go|\
+          cmd/mostlymatter/commands/server.go|\
+          cmd/mostlymatter/commands/server_test.go|\
+          cmd/mostlymatter/commands/test.go|\
+          cmd/mostlymatter/commands/version.go|\
           platform/services/cache/lru_striped.go|\
           platform/services/cache/lru_striped_bench_test.go|\
           platform/services/cache/lru_striped_test.go|\

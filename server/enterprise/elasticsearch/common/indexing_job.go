@@ -187,7 +187,13 @@ func (worker *IndexerWorker) JobChannel() chan<- model.Job {
 }
 
 func (worker *IndexerWorker) IsEnabled(cfg *model.Config) bool {
-	if license := worker.license(); license == nil || !*license.Features.Elasticsearch {
+	if worker.backend != model.ElasticsearchSettingsOSBackend {
+		if license := worker.license(); license == nil || !*license.Features.Elasticsearch {
+			return false
+		}
+	}
+
+	if worker.backend == model.ElasticsearchSettingsOSBackend && *cfg.ElasticsearchSettings.Backend != model.ElasticsearchSettingsOSBackend {
 		return false
 	}
 

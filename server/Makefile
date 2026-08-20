@@ -56,7 +56,7 @@ MMCTL_LDFLAGS += -X "$(MMCTL_PKG).commitDate=$(MMCTL_COMMIT_DATE)"
 
 # Enterprise
 BUILD_ENTERPRISE_DIR ?= ../../enterprise
-BUILD_ENTERPRISE ?= true
+BUILD_ENTERPRISE ?= false
 BUILD_ENTERPRISE_READY = false
 BUILD_TYPE_NAME = team
 BUILD_HASH_ENTERPRISE = none
@@ -135,18 +135,18 @@ GO_COMPATIBILITY_TEST_VERSIONS := 1.22.7 1.23.6
 # GOOS/GOARCH of the build host, used to determine whether we're cross-compiling or not
 BUILDER_GOOS_GOARCH="$(shell $(GO) env GOOS)_$(shell $(GO) env GOARCH)"
 
-PLATFORM_FILES="./cmd/mattermost"
+PLATFORM_FILES="./cmd/mostlymatter"
 
 # Output paths
 DIST_ROOT=dist
-DIST_PATH=$(DIST_ROOT)/mattermost
-DIST_PATH_LIN_AMD64=$(DIST_ROOT)/linux_amd64/mattermost
-DIST_PATH_LIN_ARM64=$(DIST_ROOT)/linux_arm64/mattermost
-DIST_PATH_OSX_AMD64=$(DIST_ROOT)/darwin_amd64/mattermost
-DIST_PATH_OSX_ARM64=$(DIST_ROOT)/darwin_arm64/mattermost
+DIST_PATH=$(DIST_ROOT)/mostlymatter
+DIST_PATH_LIN_AMD64=$(DIST_ROOT)/linux_amd64/mostlymatter
+DIST_PATH_LIN_ARM64=$(DIST_ROOT)/linux_arm64/mostlymatter
+DIST_PATH_OSX_AMD64=$(DIST_ROOT)/darwin_amd64/mostlymatter
+DIST_PATH_OSX_ARM64=$(DIST_ROOT)/darwin_arm64/mostlymatter
 DIST_PATH_FREEBSD_AMD64=$(DIST_ROOT)/freebsd_amd64/mattermost
 DIST_PATH_FREEBSD_ARM64=$(DIST_ROOT)/freebsd_arm64/mattermost
-DIST_PATH_WIN=$(DIST_ROOT)/windows/mattermost
+DIST_PATH_WIN=$(DIST_ROOT)/windows/mostlymatter
 
 # Packages lists
 TE_PACKAGES=$(shell $(GO) list ./public/...) $(shell $(GO) list ./... | grep -vE 'server/v8/cmd/mmctl')
@@ -890,7 +890,7 @@ clean: setup-go-work stop-docker ## Clean up everything except persistent server
 	rm -f *.out
 	rm -f *.test
 	rm -f channels/imports/imports.go
-	rm -f cmd/mattermost/cprofile*.out
+	rm -f cmd/mostlymatter/cprofile*.out
 
 .PHONY: nuke
 nuke: clean clean-docker ## Clean plus removes persistent server data.

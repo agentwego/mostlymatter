@@ -32,6 +32,21 @@ func SetupConnection(logger mlog.LoggerIFace, connType string, dataSource string
 	// At this point, we have passed sql.Open, so we deliberately ignore any errors.
 	sanitized, _ := model.SanitizeDataSource(*settings.DriverName, dataSource)
 
+	// Auto-append sslmode=disable if it's postgres and missing
+	if *settings.DriverName == "postgres" && !strings.Contains(dataSource, "sslmode=") {
+		if strings.Contains(dataSource, "?") {
+			dataSource += "&sslmode=disable"
+		} else {
+			dataSource += "?sslmode=disable"
+		}
+		// Re-open with new datasource
+		db.Close()
+		db, err = dbsql.Open(*settings.DriverName, dataSource)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to open SQL connection with sslmode=disable")
+		}
+	}
+
 	logger = logger.With(
 		mlog.String("database", connType),
 		mlog.String("dataSource", sanitized),

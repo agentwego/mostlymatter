@@ -6,7 +6,7 @@ package main
 import (
 	"os"
 
-	"github.com/mattermost/mattermost/server/v8/cmd/mattermost/commands"
+	"github.com/mattermost/mattermost/server/v8/cmd/mostlymatter/commands"
 	// Import and register app layer slash commands
 	_ "github.com/mattermost/mattermost/server/v8/channels/app/slashcommands"
 	// Plugins

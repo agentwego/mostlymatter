@@ -367,13 +367,9 @@ func New(sc ServiceConfig, options ...Option) (*PlatformService, error) {
 	}
 	license := ps.License()
 
-	// This is a hack because ideally we wouldn't even have started the Redis client
-	// if the license didn't have clustering. But there's an intricate deadlock
-	// where license cannot be loaded before store, and store cannot be loaded before
-	// cache. So loading license before loading cache is an uphill battle.
-	if (license == nil || !*license.Features.Cluster) && *cacheConfig.CacheType == model.CacheTypeRedis && !ps.forceEnableRedis {
-		return nil, fmt.Errorf("Redis cannot be used in an instance without a license or a license without clustering")
-	}
+	// Mostlymatter allows Redis as an external cache backend without enabling the
+	// Enterprise cluster feature. Session and status caches intentionally stay on
+	// local LRU above, so this only affects the general cache provider.
 
 	// Step 9: Initialize filestore
 	if ps.filestore == nil {
